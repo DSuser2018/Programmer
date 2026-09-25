@@ -12,8 +12,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            gap: 25px;
             background: #1e1e1e;
             font-family: Arial, sans-serif;
+            color: white;
         }
 
         .calculator {
@@ -73,11 +75,58 @@
         .equals {
             background: #28a745;
         }
+
+        .history {
+            width: 280px;
+            max-height: 450px;
+            padding: 20px;
+            background: #333;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .history h2 {
+            margin-top: 0;
+            color: #58a6ff;
+        }
+
+        #historyList {
+            max-height: 330px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #222;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+
+        .clear-history {
+            width: 100%;
+            height: 45px;
+            margin-top: 15px;
+            background: #d9534f;
+            font-size: 16px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .history {
+                width: 300px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+    <!-- Calculator -->
     <div class="calculator">
 
         <input type="text" id="display" value="0" readonly>
@@ -112,15 +161,34 @@
 
     </div>
 
+    <!-- History -->
+    <div class="history">
+
+        <h2>🕘 History</h2>
+
+        <div id="historyList">
+            <p>No calculations yet.</p>
+        </div>
+
+        <button class="clear-history" onclick="clearHistory()">
+            Clear History
+        </button>
+
+    </div>
+
     <script>
+
         const display = document.getElementById("display");
+        const historyList = document.getElementById("historyList");
 
         function addToDisplay(value) {
+
             if (display.value === "0") {
                 display.value = value;
             } else {
                 display.value += value;
             }
+
         }
 
         function clearDisplay() {
@@ -128,22 +196,70 @@
         }
 
         function deleteNumber() {
+
             if (display.value.length > 1) {
                 display.value = display.value.slice(0, -1);
             } else {
                 display.value = "0";
             }
+
         }
 
         function calculate() {
+
+            const expression = display.value;
+
             try {
-                display.value = Function(
-                    "return " + display.value
+
+                const result = Function(
+                    "return " + expression
                 )();
+
+                if (!Number.isFinite(result)) {
+                    display.value = "Error";
+                    return;
+                }
+
+                display.value = result;
+
+                addToHistory(expression, result);
+
             } catch {
+
                 display.value = "Error";
+
             }
+
         }
+
+        function addToHistory(expression, result) {
+
+            // Remove "No calculations yet."
+            if (historyList.children.length === 1 &&
+                historyList.children[0].tagName === "P") {
+
+                historyList.innerHTML = "";
+
+            }
+
+            const item = document.createElement("div");
+
+            item.className = "history-item";
+
+            item.textContent =
+                expression + " = " + result;
+
+            historyList.prepend(item);
+
+        }
+
+        function clearHistory() {
+
+            historyList.innerHTML =
+                "<p>No calculations yet.</p>";
+
+        }
+
     </script>
 
 </body>

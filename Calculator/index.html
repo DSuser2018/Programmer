@@ -3,122 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>My Calculator</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             gap: 25px;
+            padding: 30px 15px;
             background: #1e1e1e;
-            font-family: Arial, sans-serif;
             color: white;
+            font-family: Arial, sans-serif;
+            transition: 0.3s;
+        }
+
+        body.light {
+            background: #f0f0f0;
+            color: #111;
+        }
+
+        .calculator,
+        .history {
+            background: #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        body.light .calculator,
+        body.light .history {
+            background: white;
         }
 
         .calculator {
+            width: 330px;
+        }
+
+        .history {
             width: 300px;
-            padding: 20px;
-            background: #333;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #58a6ff;
         }
 
         #display {
             width: 100%;
-            height: 60px;
+            height: 65px;
             margin-bottom: 15px;
             padding: 10px;
-            box-sizing: border-box;
-            font-size: 28px;
-            text-align: right;
-            background: #111;
-            color: white;
             border: none;
             border-radius: 8px;
+            background: #111;
+            color: white;
+            font-size: 28px;
+            text-align: right;
         }
 
         .buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
 
         button {
-            height: 60px;
-            font-size: 22px;
+            min-height: 55px;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
             background: #555;
             color: white;
+            font-size: 18px;
+            cursor: pointer;
         }
 
         button:hover {
-            background: #666;
+            filter: brightness(1.15);
         }
 
         .operator {
             background: #ff9500;
         }
 
-        .operator:hover {
-            background: #ffaa33;
+        .equals {
+            background: #28a745;
         }
 
         .clear {
             background: #d9534f;
         }
 
-        .equals {
-            background: #28a745;
+        .memory {
+            background: #6f42c1;
         }
 
-        .history {
-            width: 280px;
-            max-height: 450px;
-            padding: 20px;
-            background: #333;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .function {
+            background: #1677ff;
         }
 
-        .history h2 {
-            margin-top: 0;
-            color: #58a6ff;
-        }
-
-        #historyList {
-            max-height: 330px;
+        .history-list {
+            max-height: 400px;
             overflow-y: auto;
         }
 
         .history-item {
-            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            padding: 10px;
             margin-bottom: 8px;
-            background: #222;
             border-radius: 8px;
-            word-break: break-word;
+            background: #222;
         }
 
-        .clear-history {
-            width: 100%;
-            height: 45px;
-            margin-top: 15px;
+        body.light .history-item {
+            background: #eeeeee;
+        }
+
+        .history-text {
+            overflow-wrap: anywhere;
+        }
+
+        .delete-history {
+            min-height: 35px;
+            width: 40px;
             background: #d9534f;
             font-size: 16px;
         }
 
-        @media (max-width: 700px) {
+        .history-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .history-buttons button {
+            flex: 1;
+            min-height: 45px;
+            font-size: 15px;
+        }
+
+        .settings {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .settings button {
+            flex: 1;
+            min-height: 45px;
+            font-size: 15px;
+        }
+
+        /* Confirmation popup */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 350px;
+            padding: 25px;
+            background: #333;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+
+        body.light .modal-box {
+            background: white;
+            color: #111;
+        }
+
+        .modal-box h2 {
+            color: #ff9500;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .no-button {
+            background: #666;
+        }
+
+        .yes-button {
+            background: #d9534f;
+        }
+
+        @media (max-width: 750px) {
             body {
                 flex-direction: column;
-                padding: 20px;
+                align-items: center;
             }
 
+            .calculator,
             .history {
-                width: 300px;
+                width: min(100%, 350px);
             }
         }
     </style>
@@ -126,18 +240,40 @@
 
 <body>
 
-    <!-- Calculator -->
+    <!-- CALCULATOR -->
+
     <div class="calculator">
 
-        <input type="text" id="display" value="0" readonly>
+        <h1>🧮 Calculator</h1>
+
+        <input
+            id="display"
+            value="0"
+            readonly
+            aria-label="Calculator display"
+        >
 
         <div class="buttons">
 
+            <!-- Top row -->
             <button class="clear" onclick="clearDisplay()">C</button>
             <button onclick="deleteNumber()">⌫</button>
             <button class="operator" onclick="addToDisplay('%')">%</button>
             <button class="operator" onclick="addToDisplay('/')">÷</button>
 
+            <!-- Memory -->
+            <button class="memory" onclick="memoryClear()">MC</button>
+            <button class="memory" onclick="memoryRecall()">MR</button>
+            <button class="memory" onclick="memoryAdd()">M+</button>
+            <button class="memory" onclick="memorySubtract()">M−</button>
+
+            <!-- Scientific -->
+            <button class="function" onclick="squareRoot()">√</button>
+            <button class="function" onclick="squareNumber()">x²</button>
+            <button class="function" onclick="addToDisplay('**')">xʸ</button>
+            <button class="function" onclick="addToDisplay('(')">(</button>
+
+            <!-- Numbers -->
             <button onclick="addToDisplay('7')">7</button>
             <button onclick="addToDisplay('8')">8</button>
             <button onclick="addToDisplay('9')">9</button>
@@ -155,35 +291,95 @@
 
             <button onclick="addToDisplay('0')">0</button>
             <button onclick="addToDisplay('.')">.</button>
+            <button onclick="addToDisplay(')')">)</button>
             <button class="equals" onclick="calculate()">=</button>
 
         </div>
 
+        <div class="settings">
+            <button onclick="toggleTheme()">🌙 / ☀️ Theme</button>
+            <button onclick="copyResult()">📋 Copy</button>
+        </div>
+
     </div>
 
-    <!-- History -->
+
+    <!-- HISTORY -->
+
     <div class="history">
 
         <h2>🕘 History</h2>
 
-        <div id="historyList">
-            <p>No calculations yet.</p>
+        <div id="historyList" class="history-list">
         </div>
 
-        <button class="clear-history" onclick="clearHistory()">
-            Clear History
-        </button>
+        <div class="history-buttons">
+            <button onclick="askClearHistory()" class="clear">
+                🗑️ Clear History
+            </button>
+        </div>
 
     </div>
+
+
+    <!-- CONFIRMATION MESSAGE -->
+
+    <div id="confirmationModal" class="modal">
+
+        <div class="modal-box">
+
+            <h2>⚠️ Are you sure?</h2>
+
+            <p>
+                Are you sure you want to clear your calculator history?
+            </p>
+
+            <div class="modal-buttons">
+
+                <button
+                    class="no-button"
+                    onclick="closeConfirmation()"
+                >
+                    No
+                </button>
+
+                <button
+                    class="yes-button"
+                    onclick="confirmClearHistory()"
+                >
+                    Yes
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
 
     <script>
 
         const display = document.getElementById("display");
         const historyList = document.getElementById("historyList");
+        const confirmationModal =
+            document.getElementById("confirmationModal");
+
+        let memory = 0;
+
+        let history =
+            JSON.parse(localStorage.getItem("calculatorHistory")) || [];
+
+
+        /* -------------------------
+           DISPLAY
+        ------------------------- */
 
         function addToDisplay(value) {
 
-            if (display.value === "0") {
+            if (
+                display.value === "0" ||
+                display.value === "Error"
+            ) {
                 display.value = value;
             } else {
                 display.value += value;
@@ -191,19 +387,33 @@
 
         }
 
+
         function clearDisplay() {
+
             display.value = "0";
+
         }
+
 
         function deleteNumber() {
 
-            if (display.value.length > 1) {
-                display.value = display.value.slice(0, -1);
-            } else {
+            if (
+                display.value === "Error" ||
+                display.value.length <= 1
+            ) {
                 display.value = "0";
+                return;
             }
 
+            display.value =
+                display.value.slice(0, -1);
+
         }
+
+
+        /* -------------------------
+           CALCULATOR
+        ------------------------- */
 
         function calculate() {
 
@@ -216,8 +426,7 @@
                 )();
 
                 if (!Number.isFinite(result)) {
-                    display.value = "Error";
-                    return;
+                    throw new Error();
                 }
 
                 display.value = result;
@@ -232,35 +441,308 @@
 
         }
 
+
+        /* -------------------------
+           SCIENTIFIC FUNCTIONS
+        ------------------------- */
+
+        function squareRoot() {
+
+            const number = Number(display.value);
+
+            if (!Number.isFinite(number) || number < 0) {
+                display.value = "Error";
+                return;
+            }
+
+            const result = Math.sqrt(number);
+
+            display.value = result;
+
+            addToHistory(`√${number}`, result);
+
+        }
+
+
+        function squareNumber() {
+
+            const number = Number(display.value);
+
+            if (!Number.isFinite(number)) {
+                display.value = "Error";
+                return;
+            }
+
+            const result = number ** 2;
+
+            display.value = result;
+
+            addToHistory(`${number}²`, result);
+
+        }
+
+
+        /* -------------------------
+           MEMORY
+        ------------------------- */
+
+        function memoryClear() {
+
+            memory = 0;
+
+        }
+
+
+        function memoryRecall() {
+
+            display.value = memory;
+
+        }
+
+
+        function memoryAdd() {
+
+            const number = Number(display.value);
+
+            if (Number.isFinite(number)) {
+                memory += number;
+            }
+
+        }
+
+
+        function memorySubtract() {
+
+            const number = Number(display.value);
+
+            if (Number.isFinite(number)) {
+                memory -= number;
+            }
+
+        }
+
+
+        /* -------------------------
+           HISTORY
+        ------------------------- */
+
         function addToHistory(expression, result) {
 
-            // Remove "No calculations yet."
-            if (historyList.children.length === 1 &&
-                historyList.children[0].tagName === "P") {
+            history.unshift({
+                expression: expression,
+                result: result
+            });
 
-                historyList.innerHTML = "";
+            /*
+             * Keep the history from becoming enormous.
+             */
+            history = history.slice(0, 100);
+
+            saveHistory();
+
+            renderHistory();
+
+        }
+
+
+        function saveHistory() {
+
+            localStorage.setItem(
+                "calculatorHistory",
+                JSON.stringify(history)
+            );
+
+        }
+
+
+        function renderHistory() {
+
+            historyList.innerHTML = "";
+
+            if (history.length === 0) {
+
+                historyList.innerHTML =
+                    "<p>No calculations yet.</p>";
+
+                return;
 
             }
 
-            const item = document.createElement("div");
+            history.forEach((item, index) => {
 
-            item.className = "history-item";
+                const historyItem =
+                    document.createElement("div");
 
-            item.textContent =
-                expression + " = " + result;
+                historyItem.className =
+                    "history-item";
 
-            historyList.prepend(item);
+                const text =
+                    document.createElement("span");
+
+                text.className =
+                    "history-text";
+
+                text.textContent =
+                    `${item.expression} = ${item.result}`;
+
+                const deleteButton =
+                    document.createElement("button");
+
+                deleteButton.className =
+                    "delete-history";
+
+                deleteButton.textContent = "×";
+
+                deleteButton.onclick = function () {
+                    deleteHistoryItem(index);
+                };
+
+                historyItem.appendChild(text);
+                historyItem.appendChild(deleteButton);
+
+                historyList.appendChild(historyItem);
+
+            });
 
         }
 
-        function clearHistory() {
 
-            historyList.innerHTML =
-                "<p>No calculations yet.</p>";
+        function deleteHistoryItem(index) {
+
+            history.splice(index, 1);
+
+            saveHistory();
+
+            renderHistory();
 
         }
+
+
+        /* -------------------------
+           CLEAR HISTORY CONFIRMATION
+        ------------------------- */
+
+        function askClearHistory() {
+
+            confirmationModal.classList.add("show");
+
+        }
+
+
+        function closeConfirmation() {
+
+            confirmationModal.classList.remove("show");
+
+        }
+
+
+        function confirmClearHistory() {
+
+            history = [];
+
+            saveHistory();
+
+            renderHistory();
+
+            closeConfirmation();
+
+        }
+
+
+        /* -------------------------
+           COPY
+        ------------------------- */
+
+        function copyResult() {
+
+            const text = display.value;
+
+            if (
+                navigator.clipboard &&
+                text !== "Error"
+            ) {
+
+                navigator.clipboard.writeText(text);
+
+            }
+
+        }
+
+
+        /* -------------------------
+           THEME
+        ------------------------- */
+
+        function toggleTheme() {
+
+            document.body.classList.toggle("light");
+
+            const isLight =
+                document.body.classList.contains("light");
+
+            localStorage.setItem(
+                "calculatorTheme",
+                isLight ? "light" : "dark"
+            );
+
+        }
+
+
+        /* -------------------------
+           KEYBOARD SUPPORT
+        ------------------------- */
+
+        document.addEventListener("keydown", function(event) {
+
+            /*
+             * Don't interfere with normal typing
+             * if an input is focused.
+             */
+            if (
+                document.activeElement.tagName === "INPUT" &&
+                document.activeElement !== display
+            ) {
+                return;
+            }
+
+            const key = event.key;
+
+            if ("0123456789.+-*/%()".includes(key)) {
+
+                addToDisplay(key);
+
+            } else if (key === "Enter" || key === "=") {
+
+                calculate();
+
+            } else if (key === "Backspace") {
+
+                deleteNumber();
+
+            } else if (key === "Escape") {
+
+                clearDisplay();
+
+            }
+
+        });
+
+
+        /* -------------------------
+           LOAD SAVED DATA
+        ------------------------- */
+
+        const savedTheme =
+            localStorage.getItem("calculatorTheme");
+
+        if (savedTheme === "light") {
+            document.body.classList.add("light");
+        }
+
+        renderHistory();
 
     </script>
 
 </body>
 </html>
+ 
